@@ -1,0 +1,14 @@
+---
+- name: Get current hostname
+  command: cat /etc/hostname
+  register: cat_hostname
+
+- name: Change hostname
+  hostname: 
+    name: "{{ hostname }}"
+
+- name: Update hosts
+  replace:
+    path: /etc/hosts
+    regexp: "{{ cat_hostname.stdout }}"
+    replace: "{{ hostname }}"

@@ -1,0 +1,31 @@
+---
+- name: Install docker
+  shell: curl -fsSL get.docker.com -o /tmp/get-docker.sh && sh /tmp/get-docker.sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Create docker group
+  group:
+    name: docker
+    state: present
+
+- name: Add pi user to the docker group
+  user:
+    name: pi
+    groups: docker
+    append: yes
+
+- name: Install pip
+  apt:
+    name: python-pip
+    state: present
+
+- name: Update pip
+  pip:
+    name: pip
+    state: latest
+
+- name: Install Docker-Compose
+  pip:
+    name: docker-compose
+    state: present
