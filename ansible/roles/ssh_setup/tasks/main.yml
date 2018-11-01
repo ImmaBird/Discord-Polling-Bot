@@ -1,9 +1,9 @@
 ---
 - name: Add authorized key for ssh
   authorized_key:
-    user: pi
+    user: "{{ user }}"
     state: present
     key: "{{ public_ssh_key }}"
 
 - name: Delete login password
-  command: passwd -d pi
+  command: passwd -d "{{ user }}"
