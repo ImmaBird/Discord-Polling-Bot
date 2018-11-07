@@ -1,7 +1,7 @@
 {
-  "name": "greeter-bot",
+  "name": "polling-bot",
   "version": "1.0.0",
-  "description": "My First Discord Bot",
+  "description": "Create polls in your discord server!",
   "main": "bot.js",
   "author": "ImmaBird",
   "dependencies": {
