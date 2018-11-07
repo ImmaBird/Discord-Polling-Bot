@@ -1,7 +1,9 @@
-FROM node
+FROM python:3.6
 
-COPY . /discord-bot
+RUN [ "python", "-m", "pip", "install", "discord.py==0.16.12" ]
 
 WORKDIR /discord-bot
 
-RUN [ "node", "bot.js" ]
+COPY . /discord-bot
+
+RUN [ "python", "-u", "bot.py" ]
