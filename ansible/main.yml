@@ -8,5 +8,4 @@
   roles:
     - { role: change_hostname, tags: ['hostname']}
     - { role: ssh_setup, tags: ['ssh'] }
-    #- { role: docker, tags: ['pi_setup', 'docker'] }
-    
+    - { role: docker, tags: ['pi_setup', 'docker'] }

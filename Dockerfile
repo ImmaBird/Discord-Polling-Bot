@@ -4,6 +4,6 @@ RUN [ "python", "-m", "pip", "install", "discord.py==0.16.12" ]
 
 WORKDIR /discord-bot
 
-COPY . /discord-bot
+COPY src /discord-bot
 
 RUN [ "python", "-u", "bot.py" ]
