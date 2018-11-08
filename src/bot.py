@@ -33,7 +33,7 @@ async def on_message(message):
     response = message.author.mention + ' created a poll!\n'
 
     # clean up the input
-    content = message.content.remove('\n').split(';')
+    content = message.content.replace('\n', '').split(';')
     for i in range(len(content)):
         content[i] = content[i].strip()
         if content[i] == '':
@@ -48,11 +48,11 @@ async def on_message(message):
     options = content[1:]
 
     # add the question to the response
-    response += question + ' ;\n'
+    response += question + '\n;\n'
     
     # add all the options to the response
     for i in range(len(options)):
-        response += emojis[i] + ' ' + options[i] + '\n```0%\n<                                                  >```;\n'
+        response = ''.join([response, emojis[i], ' ', options[i], '\npercent\ngraph\n;\n'])
     
     # send the response
     poll = await bot.send_message(message.channel, response)
@@ -64,64 +64,54 @@ async def on_message(message):
     for i in range(len(options)):
         await bot.add_reaction(poll, emojis[i])
 
-
-def array_to_string(array):
-    result = ''
-    for element in array:
-        result += element + '\n'
-    return result
+def compute_graph(percent, length):
+    num_bars = int(percent * length)
+    return ''.join(['<', ''.join(['=' for _ in range(num_bars)]), ''.join(['_' for _ in range(length - num_bars)]), '>'])
 
 
-def on_reaction(reaction, user):
+async def on_reaction(reaction, user):
     # get the message that was reacted on
     message = reaction.message
 
     # continue if message is in polling channel
     if message.channel.name != 'polls':
         return
-
+    
     # continue if message was sent by bot
     if message.author != bot.user:
+       return
+
+    # return if the bot reacted
+    if user == bot.user:
         return
 
     # get total reaction count
     total_reactions = 0
     for react in message.reactions:
         total_reactions += react.count - 1
-    
-    # get percentage of votes
-    percent_votes = reaction.count / total_reactions * 100
 
-    content = message.content.split(';')
-    emoji = reaction.emoji
-    
-    result = ''
+    if total_reactions < 0:
+        return
+
+    content = message.content.split('\n;\n')
     for i in range(1, len(content)):
-        if content[i].startswith(emoji):
-            options = content[i].split('\n')
-            options[1] = '```' +  percent_votes + '%'
-            options[2] = '<'
-            for j in range(50):
-                if j < percent_votes / 2:
-                    options[2] += '='
-                else:
-                    options[2] += ' '
-            options[2] += '>```;'
-            content[i] = array_to_string(options)
-            result = array_to_string(content)
-            break
-    
+        sections = content[i].split('\n')
+        sections[1] = ''.join(['```', str(.33 * 100), '%'])
+        sections[2] = ''.join([compute_graph(.33, 50), '```'])
+        content[i] = '\n'.join(sections)
+    result = '\n;\n'.join(content)
+    print(result)
     await bot.edit_message(message, result)
 
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    on_reaction(reaction, user)
+    await on_reaction(reaction, user)
 
 
 @bot.event
 async def on_reaction_remove(reaction, user):
-    on_reaction(reaction, user)
+    await on_reaction(reaction, user)
 
 
 @bot.event
