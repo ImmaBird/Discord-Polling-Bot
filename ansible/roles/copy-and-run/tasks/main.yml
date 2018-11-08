@@ -1,0 +1,7 @@
+- name: copy
+  copy:
+    dest: /discord-bot/
+    src: ../src/
+
+- name: run
+  command: nohup (docker build /discord-bot/) &
