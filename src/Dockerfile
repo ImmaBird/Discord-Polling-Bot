@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM arm32v6/python:3.6
 
 RUN [ "python", "-m", "pip", "install", "discord.py==0.16.12" ]
 

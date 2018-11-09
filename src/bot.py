@@ -2,21 +2,28 @@ import discord
 
 TOKEN = ''
 
-emojis = ["\N{REGIONAL INDICATOR SYMBOL LETTER A}", "\N{REGIONAL INDICATOR SYMBOL LETTER B}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER C}", "\N{REGIONAL INDICATOR SYMBOL LETTER D}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER E}", "\N{REGIONAL INDICATOR SYMBOL LETTER F}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER G}", "\N{REGIONAL INDICATOR SYMBOL LETTER H}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER I}", "\N{REGIONAL INDICATOR SYMBOL LETTER J}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER K}", "\N{REGIONAL INDICATOR SYMBOL LETTER L}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER M}", "\N{REGIONAL INDICATOR SYMBOL LETTER N}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER O}", "\N{REGIONAL INDICATOR SYMBOL LETTER P}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER Q}", "\N{REGIONAL INDICATOR SYMBOL LETTER R}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER S}", "\N{REGIONAL INDICATOR SYMBOL LETTER T}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER U}", "\N{REGIONAL INDICATOR SYMBOL LETTER V}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER W}", "\N{REGIONAL INDICATOR SYMBOL LETTER X}",
-          "\N{REGIONAL INDICATOR SYMBOL LETTER Y}", "\N{REGIONAL INDICATOR SYMBOL LETTER Z}"]
+emoji_nums = {"\N{REGIONAL INDICATOR SYMBOL LETTER A}":0, "\N{REGIONAL INDICATOR SYMBOL LETTER B}":1,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER C}":2, "\N{REGIONAL INDICATOR SYMBOL LETTER D}":3,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER E}":4, "\N{REGIONAL INDICATOR SYMBOL LETTER F}":5,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER G}":6, "\N{REGIONAL INDICATOR SYMBOL LETTER H}":7,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER I}":8, "\N{REGIONAL INDICATOR SYMBOL LETTER J}":9,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER K}":10, "\N{REGIONAL INDICATOR SYMBOL LETTER L}":11,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER M}":12, "\N{REGIONAL INDICATOR SYMBOL LETTER N}":13,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER O}":14, "\N{REGIONAL INDICATOR SYMBOL LETTER P}":15,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER Q}":16, "\N{REGIONAL INDICATOR SYMBOL LETTER R}":17,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER S}":18, "\N{REGIONAL INDICATOR SYMBOL LETTER T}":19,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER U}":20, "\N{REGIONAL INDICATOR SYMBOL LETTER V}":21,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER W}":22, "\N{REGIONAL INDICATOR SYMBOL LETTER X}":23,
+          "\N{REGIONAL INDICATOR SYMBOL LETTER Y}":24, "\N{REGIONAL INDICATOR SYMBOL LETTER Z}":25}
+
+num_emojis = {v: k for k, v in emoji_nums.items()}
 
 bot = discord.Client()
+
+
+def compute_graph(percent, length):
+    num_bars = int(percent * length)
+    return ''.join(['<', ''.join(['=' for _ in range(num_bars)]), ''.join(['_' for _ in range(length - num_bars)]), '>'])
 
 
 @bot.event
@@ -30,7 +37,7 @@ async def on_message(message):
         return
     
     # mention the poll creater
-    response = message.author.mention + ' created a poll!\n'
+    response = message.author.mention + ' asked:\n'
 
     # clean up the input
     content = message.content.replace('\n', '').split(';')
@@ -52,7 +59,7 @@ async def on_message(message):
     
     # add all the options to the response
     for i in range(len(options)):
-        response = ''.join([response, emojis[i], ' ', options[i], '\npercent\ngraph\n;\n'])
+        response = ''.join([response, num_emojis[i], ' ', options[i], '\n```0%\n', compute_graph(0, 50), '```\n;\n'])
     
     # send the response
     poll = await bot.send_message(message.channel, response)
@@ -62,11 +69,7 @@ async def on_message(message):
 
     # react will all the options to the message we just sent
     for i in range(len(options)):
-        await bot.add_reaction(poll, emojis[i])
-
-def compute_graph(percent, length):
-    num_bars = int(percent * length)
-    return ''.join(['<', ''.join(['=' for _ in range(num_bars)]), ''.join(['_' for _ in range(length - num_bars)]), '>'])
+        await bot.add_reaction(poll, num_emojis[i])
 
 
 async def on_reaction(reaction, user):
@@ -93,14 +96,18 @@ async def on_reaction(reaction, user):
     if total_reactions < 0:
         return
 
+
     content = message.content.split('\n;\n')
-    for i in range(1, len(content)):
+    for react in message.reactions:
+        i = emoji_nums[str(react.emoji)] + 1
+        percent = 0
+        if total_reactions != 0:
+            percent = (react.count - 1) / total_reactions
         sections = content[i].split('\n')
-        sections[1] = ''.join(['```', str(.33 * 100), '%'])
-        sections[2] = ''.join([compute_graph(.33, 50), '```'])
+        sections[1] = ''.join(['```', str(percent * 100), '%'])
+        sections[2] = ''.join([compute_graph(percent, 50), '```'])
         content[i] = '\n'.join(sections)
     result = '\n;\n'.join(content)
-    print(result)
     await bot.edit_message(message, result)
 
 
@@ -116,6 +123,11 @@ async def on_reaction_remove(reaction, user):
 
 @bot.event
 async def on_ready():
+    # channel = discord.utils.get(bot.get_all_channels(), name='polls')
+    # emoji = num_emojis[0]
+    # async for log in bot.logs_from(channel, limit=100, reverse=True):
+    #     if log.author == bot.user:
+    #         await bot.edit_message(log, log.content)
     print('Ready...')
 
 
