@@ -1,0 +1,2 @@
+export "TOKEN=`cat ../private/api_key`"
+docker build -t discbot . ; docker run --rm discbot $TOKEN
